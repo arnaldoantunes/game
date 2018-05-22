@@ -71,7 +71,7 @@
 			  cor: "#ff4e4e",
 			  gravidade: 1.7,
 			  velocidade: 0,
-			  forcadopulo: 40,
+			  forcadopulo: 25,
 			  
 			  atualiza: function(){
 				 this.velocidade += this.gravidade;
@@ -80,7 +80,7 @@
 					this.y = chao.y - this.altura;
 					//alert(this.y);
 				  }
-				  if (this.y <= 50) {this.y = this.altura; navigator.vibrate(1000);}
+				  if (this.y <= 50) {this.y = this.altura; navigator.vibrate(200);}
 				  
 			  },
 			  
@@ -115,10 +115,13 @@
 		   function main(){
 				ALTURA = window.innerHeight;
 				LARGURA = window.innerWidth;
-				if (LARGURA >= 500 ){
-					ALTURA = 600;
-					LARGURA = 600;
-				}	
+				//if (LARGURA >= 500 ){
+				//	ALTURA = 600;
+			//		LARGURA = 600;
+			//	}	
+			alert(ALTURA);
+			alert(LARGURA);
+			
 				canvas= document.createElement("canvas");
 				canvas.width = LARGURA;
 				canvas.height = ALTURA;
