@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <!--
+        Customize this policy to fit your own app's needs. For more guidance, see:
+            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
+        Some notes:
+            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+                * Enable inline JS: add 'unsafe-inline' to default-src
+       
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+		 -->
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        
+        <title>Hello World</title>
+		   <style>
+			   canvas{
+				position: absolute;
+				top: 0px;
+				bottom: 0px;
+				left: 0px;
+				right: 0px;
+				margin: auto;
+				}
+		   </style>		
+    </head>
+    <body>
+		
+		<script>
+
+		   var canvas, ctx, ALTURA, LARGURA, frames = 0,
+		   
+		   chao = {
+			  y: 550,
+			  altura: 50,
+			  cor: "#ffdf70",
+			  
+			  fazChao: function(){
+				 ctx.fillStyle = this.cor;
+				 ctx.fillRect(0, this.y, LARGURA, this.altura);
+			  }
+		   },
+		   
+		   bloco = {
+			  x: 250,
+			  y: 0,
+			  altura: 50,
+			  largura: 50,
+			  cor: "#ff4e4e",
+			  gravidade: 1.7,
+			  velocidade: 0,
+			  forcadopulo: 40,
+			  
+			  atualiza: function(){
+				 this.velocidade += this.gravidade;
+				 this.y += this.velocidade;
+				 if (this.y > chao.y - this.altura){
+					this.y = chao.y - this.altura;
+					//alert(this.y);
+				  }
+				  if (this.y <= 50) {this.y = this.altura;}
+				  
+			  },
+			  
+			  pula: function(){
+				this.velocidade = -this.forcadopulo;
+			  },
+			  
+			  desenha: function(){
+				 //ctx.fillStyle= this.cor;
+				 //ctx.fillRect(this.x, this.y, this.largura, this.altura);
+				 
+				 ctx.fillStyle = this.cor;
+				 ctx.strokeStyle = "blue";
+				 ctx.beginPath();
+				 var radius = 50;  //raio do circulo = diametro/2
+				 var anticlockwise = true;
+				 var startAngle = 0;     //inicia o arco na posição 0 graus (direita)
+				 var endAngle = Math.PI*2; //termina o arco na posição 360 graus (volta completa)
+				 ctx.arc(this.x, this.y, radius, startAngle, endAngle, anticlockwise);
+				 ctx.closePath();
+				 ctx.stroke(); //desenha a borda
+				 ctx.fill();   //preenche
+			  }
+		   
+		   };
+		   
+		   
+		   function clique(event){
+			  bloco.pula();
+		   }
+		   
+		   function main(){
+				ALTURA = window.innerHeight;
+				LARGURA = window.innerWidth;
+				if (LARGURA >= 500 ){
+					ALTURA = 600;
+					LARGURA = 600;
+				}	
+				canvas= document.createElement("canvas");
+				canvas.width = LARGURA;
+				canvas.height = ALTURA;
+				canvas.style.border = "1px solid #000";
+				ctx = canvas.getContext("2d");
+				document.body.appendChild(canvas);
+				document.addEventListener("mousedown", clique);
+				roda();
+		   }
+		   
+		   function roda(){
+			   atualiza();
+			   desenha();
+			   window.requestAnimationFrame(roda);
+		   }
+		   
+		   function atualiza(){
+			  frames++;
+			  bloco.atualiza();
+		   }
+		   
+		   function desenha(){
+			  ctx.fillStyle = "#50beff";
+			  ctx.fillRect(0,0, LARGURA, ALTURA);
+			  chao.fazChao();
+			  bloco.desenha();
+		   }
+		   		  
+		   main();
+
+		</script>
+			
+		<script type="text/javascript" src="cordova.js"></script>
+     
+    </body>
+</html>
