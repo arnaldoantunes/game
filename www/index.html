@@ -87,7 +87,8 @@
 					this.y = chao.y - this.altura;
 					this.velocidade =0;
 				  }
-				  if (this.y <= 50) {this.y = this.altura; navigator.vibrate(500);}
+				  if (this.y <= 50) {this.y = this.altura; //navigator.vibrate(500);
+				  }
 				  
 			  },
 			 			 
@@ -255,7 +256,7 @@
 				  if (bloco.score < 10) ctx.fillText(bloco.score, -13 , 19);
 				  else if (bloco.score >= 10 && bloco.score < 100) ctx.fillText(bloco.score, -26 , 19);
 				  else if (bloco.score >= 100 && bloco.score < 1000) ctx.fillText(bloco.score, -40 , 19);
-				  else if (bloco.score >= 1000 && bloco.score <= 10000) ctx.fillText(bloco.score, -55 , 19);
+				  else if (bloco.score >= 1000 && bloco.score < 10000) ctx.fillText(bloco.score, -55 , 19);
 				  ctx.restore();
 				  
 				  //if (bloco.record < bloco.score){bloco.record = bloco.score;}
