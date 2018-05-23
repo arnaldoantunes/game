@@ -50,43 +50,60 @@
 		
 		<script>
 
-		   var canvas, ctx, ALTURA, LARGURA, frames = 0,
+		   var canvas, ctx, ALTURA, LARGURA, frames = 0, velocidade = 2, estadoAtual, record,
+		   
+		   estados = {
+		      jogar: 0,
+			  jogando: 1,
+			  perdeu: 2,
+		   }, 
 		   
 		   chao = {
 			  y: 550,
 			  altura: 50,
 			  cor: "#ffdf70",
 			  
-			  fazChao: function(){
+			  desenha: function(){
 				 ctx.fillStyle = this.cor;
 				 ctx.fillRect(0, this.y, LARGURA, this.altura);
 			  }
 		   },
 		   
 		   bloco = {
-			  x: 250,
+			  x: 150,
 			  y: 0,
-			  altura: 50,
-			  largura: 50,
+			  altura: 30,
+			  largura: 30,
 			  cor: "#ff4e4e",
-			  gravidade: 1.7,
+			  gravidade: 1.6,
 			  velocidade: 0,
-			  forcadopulo: 25,
+			  forcadopulo: 24,
+			  score: 0,
 			  
 			  atualiza: function(){
 				 this.velocidade += this.gravidade;
 				 this.y += this.velocidade;
-				 if (this.y > chao.y - this.altura){
+				 if (this.y > chao.y - this.altura && estadoAtual != estados.perdeu){
 					this.y = chao.y - this.altura;
-					//alert(this.y);
+					this.velocidade =0;
 				  }
-				  if (this.y <= 50) {this.y = this.altura; navigator.vibrate(200);}
+				  if (this.y <= 50) {this.y = this.altura; navigator.vibrate(500);}
 				  
 			  },
-			  
+			 			 
 			  pula: function(){
 				this.velocidade = -this.forcadopulo;
 			  },
+			  
+			  reset: function() {
+			       this.velocidade = 0;
+				   this.y = 0;
+				   if (this.score > record){
+				      localStorage.setItem("record", this.score);
+					  record = this.score;
+				   }
+				   this.score = 0;
+			   },
 			  
 			  desenha: function(){
 				 //ctx.fillStyle= this.cor;
@@ -95,7 +112,7 @@
 				 ctx.fillStyle = this.cor;
 				 ctx.strokeStyle = "blue";
 				 ctx.beginPath();
-				 var radius = 50;  //raio do circulo = diametro/2
+				 var radius = 30;  //raio do circulo = diametro/2
 				 var anticlockwise = true;
 				 var startAngle = 0;     //inicia o arco na posição 0 graus (direita)
 				 var endAngle = Math.PI*2; //termina o arco na posição 360 graus (volta completa)
@@ -105,23 +122,78 @@
 				 ctx.fill();   //preenche
 			  }
 		   
+		   },
+		   
+		   obstaculos = {
+		       _obs: [],
+			   cores: ["#ffbc1c","#ff1c1c","#ff85e1","#52a7ff","#78ff5d"],
+			   tempoinsere: 0,
+			   
+			   insere: function(){
+			      this._obs.push({
+				      x: LARGURA,
+					  largura: 30 + Math.floor(Math.random() * 81),
+					  altura: 30 + Math.floor(Math.random() * 140),
+					  cor: this.cores[Math.floor(Math.random() * 5)]
+				  });
+				  this.tempoinsere = 50+  Math.floor(Math.random() * 200);
+			   },
+			   
+			   atualiza: function(){
+			      if (this.tempoinsere == 0)this.insere();
+				  else this.tempoinsere--;
+			   
+			      for (var i = 0, tam = this._obs.length; i < tam; i++){
+				       var obs = this._obs[i];
+					   obs.x -=	velocidade;				   
+					   if (bloco.x < obs.x + obs.largura && bloco.x + bloco.largura >= obs.x && bloco.y + bloco.altura >= chao.y - obs.altura){
+					      estadoAtual = estados.perdeu;
+					   }
+					   
+					   else if (obs.x == 0){
+					       bloco.score++;
+					   }
+					   
+					   else if (obs.x <= -obs.largura){this._obs.splice(i,1); tam--, i--}
+				   }	
+			   },
+			   
+			   limpa: function(){
+			      this._obs = [];
+			   },
+			
+			   desenha: function(){
+			       for (var i = 0, tam = this._obs.length; i < tam; i++){
+				       var obs = this._obs[i];
+					   ctx.fillStyle = obs.cor;
+					   ctx.fillRect(obs.x, chao.y - obs.altura, obs.largura, obs.altura);
+				   }			       
+			   }
+
 		   };
 		   
 		   
 		   function clique(event){
-			  bloco.pula();
+		   
+		      if (estadoAtual == estados.jogando)
+    			  bloco.pula();
+			  else if (estadoAtual == estados.jogar){  
+			      estadoAtual = estados.jogando;
+			  }
+			  else if (estadoAtual == estados.perdeu && bloco.y >= 2 * ALTURA){
+			       estadoAtual = estados.jogar;
+				   obstaculos.limpa();
+				   bloco.reset();
+			  }
 		   }
 		   
 		   function main(){
 				ALTURA = window.innerHeight;
 				LARGURA = window.innerWidth;
-				//if (LARGURA >= 500 ){
-				//	ALTURA = 600;
-			//		LARGURA = 600;
-			//	}	
-			alert(ALTURA);
-			alert(LARGURA);
-			
+				if (LARGURA >= 500 ){
+					ALTURA = 600;
+					LARGURA = 600;
+				}	
 				canvas= document.createElement("canvas");
 				canvas.width = LARGURA;
 				canvas.height = ALTURA;
@@ -129,6 +201,11 @@
 				ctx = canvas.getContext("2d");
 				document.body.appendChild(canvas);
 				document.addEventListener("mousedown", clique);
+				estadoAtual = estados.jogar; 
+				
+				record = localStorage.getItem("record");
+				if (record == null){record = 0;}
+				
 				roda();
 		   }
 		   
@@ -141,12 +218,57 @@
 		   function atualiza(){
 			  frames++;
 			  bloco.atualiza();
+			  if (estadoAtual == estados.jogando){
+			     obstaculos.atualiza();
+			  }
+			  			 
+			  //else if (estadoAtual == estados.perdeu){
+			  //   obstaculos.limpa();
+			  //}
 		   }
 		   
 		   function desenha(){
 			  ctx.fillStyle = "#50beff";
 			  ctx.fillRect(0,0, LARGURA, ALTURA);
-			  chao.fazChao();
+			  
+			  ctx.fillStyle = "#fff";
+			  ctx.font = "50px Arial";
+			  ctx.fillText(bloco.score, 30, 70);
+			  
+			  if (estadoAtual == estados.jogar){
+			      ctx.fillStyle = "green";
+				  ctx.fillRect(LARGURA / 2 - 50, ALTURA / 2 - 50, 100, 100);
+			  }
+			  else if (estadoAtual == estados.perdeu) {
+			      ctx.fillStyle = "red";
+				  ctx.fillRect(LARGURA / 2 - 50, ALTURA / 2 - 50, 100, 100);
+				  ctx.save();
+				  ctx.translate(LARGURA / 2, ALTURA / 2)
+				  ctx.fillStyle = "#fff";
+				  
+				  if (bloco.score > record){ctx.fillText("Novo Recorde!", -150, -65)}	 
+				  else if (record < 10){ctx.fillText("Recorde " + record, -115 , -65)}
+				  else if (record >= 10 && record < 100){ctx.fillText("Recorde " + record, -132 , -65)}
+				  else if (record >= 100 && record < 1000){ctx.fillText("Recorde " + record, -148 , -65)} 
+				  else if (record >= 1000 && record < 10000){ctx.fillText("Recorde " + record, -168 , -65)} 				  
+				   
+				  if (bloco.score < 10) ctx.fillText(bloco.score, -13 , 19);
+				  else if (bloco.score >= 10 && bloco.score < 100) ctx.fillText(bloco.score, -26 , 19);
+				  else if (bloco.score >= 100 && bloco.score < 1000) ctx.fillText(bloco.score, -40 , 19);
+				  else if (bloco.score >= 1000 && bloco.score <= 10000) ctx.fillText(bloco.score, -55 , 19);
+				  ctx.restore();
+				  
+				  //if (bloco.record < bloco.score){bloco.record = bloco.score;}
+				  //ctx.fillStyle = "#fff";
+			      //ctx.font = "50px Arial";
+			      //ctx.fillText(record, 200, 300);
+			  }
+			  
+			  else if (estadoAtual == estados.jogando){
+			      obstaculos.desenha();
+			  }
+			  
+			  chao.desenha();
 			  bloco.desenha();
 		   }
 		   		  
